@@ -8,7 +8,8 @@ function Container() {
   const [state, setState] = useState({
     data: [],
     loading: false,
-    errorMessage: ''
+    errorMessage: '',
+    noResults: false
   });
 
   const [subject, setSubject] = useState(null);
@@ -25,12 +26,12 @@ function Container() {
         debounceTime(200),
         switchMap(term =>
           merge(
-            of({loading: true, errorMessage: ''}),
+            of({loading: true, errorMessage: '', noResults: false}),
             fetch('https://fa-search-backend.herokuapp.com/search?delay=true&term=' + term).then(response => {
               if(response.ok) {
                 return response
                   .json()
-                  .then(data => ({data, loading: false}));
+                  .then(data => ({data, loading: false, noResults: data.length === 0}));
               }
               return response
                 .json()
@@ -66,7 +67,7 @@ function Container() {
   return (
     <div className="container">
       <Input loading={state.loading} onChange={onChange} />
-      <Results data={state.data} errorMessage={state.errorMessage} />
+      <Results data={state.data} errorMessage={state.errorMessage} noResults={state.noResults} />
     </div>
   );
 }
