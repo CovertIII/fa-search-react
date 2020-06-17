@@ -1,0 +1,1 @@
+{"version":3,"sources":["index.css"],"names":[],"mappings":"AAAA,MACE,YAAa,CACb,aAAc,CACd,4CACF,CAEA,YACE,YACF,CAEA,cACE,YACF","file":"main.9c109212.chunk.css","sourcesContent":[".grid {\n  display: grid;\n  grid-gap: 10px;\n  grid-template-columns: repeat(auto-fit, 100px);\n}\n\n.grid-child {\n  height: 200px;\n}\n\n.card-img-top {\n  height: 100px;\n}\n"]}
