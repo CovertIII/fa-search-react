@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BehaviorSubject } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { debounceTime } from 'rxjs/operators';
 import Input from './Input.js';
 import Results from './Results.js';
 
@@ -18,7 +18,9 @@ function Container() {
       const sub = new BehaviorSubject('');
       setSubject(sub);
     } else {
-      subject.subscribe( term => {
+      const observable = subject.pipe(
+        debounceTime(200)
+      ).subscribe( term => {
         return fetch('https://fa-search-backend.herokuapp.com/search?delay=true&term=' + term).then(response => {
           return response.json();
         }).then(data => {
@@ -30,7 +32,10 @@ function Container() {
         });
       });
 
-      return () => subject.unsubscribe();
+      return () => {
+        observable.unsubscribe()
+        subject.unsubscribe();
+      }
     }
   }, [subject]);
 
