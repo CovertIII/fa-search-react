@@ -8,7 +8,7 @@ function Results({data = [], errorMessage = '', noResults = false}) {
       <div className="grid">
         { data.map(({name, uri}) =>
         <div key={uri} className="card grid-child">
-          <img src={uri} className="card-img-top" alt={name} />
+          <img src={'https://fa-search-backend.herokuapp.com/' + uri} className="card-img-top" alt={name} />
           <p className="card-text"><a href={'https://fontawesome.com/icons/' + name}>{name}</a></p>
         </div>
         )}
