@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BehaviorSubject, of, merge } from 'rxjs';
-import { debounceTime, map, distinctUntilChanged, filter, switchMap } from 'rxjs/operators';
+import { debounceTime, map, distinctUntilChanged, filter, switchMap, catchError } from 'rxjs/operators';
 import Input from './Input.js';
 import Results from './Results.js';
 
@@ -25,17 +25,27 @@ function Container() {
         debounceTime(200),
         switchMap(term =>
           merge(
-            of({loading: true}),
+            of({loading: true, errorMessage: ''}),
             fetch('https://fa-search-backend.herokuapp.com/search?delay=true&term=' + term).then(response => {
-              return response.json();
-            }).then(data => {
-              return {
-                data,
-                loading: false
-              };
+              if(response.ok) {
+                return response
+                  .json()
+                  .then(data => ({data, loading: false}));
+              }
+              return response
+                .json()
+                .then(data => ({
+                  data: [],
+                  loading: false,
+                  errorMessage: data.title
+                }));
             })
           )
-        )
+        ),
+        catchError(e => ({
+          loading: false,
+          errorMessage: 'An application error occured'
+        }))
       ).subscribe( newState => {
         setState(s => Object.assign({}, s, newState));
       });
