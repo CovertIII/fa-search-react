@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BehaviorSubject } from 'rxjs';
-import { debounceTime, map, distinctUntilChanged, filter } from 'rxjs/operators';
+import { debounceTime, map, distinctUntilChanged, filter, switchMap } from 'rxjs/operators';
 import Input from './Input.js';
 import Results from './Results.js';
 
@@ -22,17 +22,19 @@ function Container() {
         map(s => s.trim()),
         distinctUntilChanged(),
         filter(s => s.length >= 2),
-        debounceTime(200)
-      ).subscribe( term => {
-        return fetch('https://fa-search-backend.herokuapp.com/search?delay=true&term=' + term).then(response => {
-          return response.json();
-        }).then(data => {
-          const newState = {
-            data,
-            loading: false
-          };
-          setState(s => Object.assign({}, s, newState));
-        });
+        debounceTime(200),
+        switchMap(term => {
+          return fetch('https://fa-search-backend.herokuapp.com/search?delay=true&term=' + term).then(response => {
+            return response.json();
+          }).then(data => {
+            return {
+              data,
+              loading: false
+            };
+          });
+        })
+      ).subscribe( newState => {
+        setState(s => Object.assign({}, s, newState));
       });
 
       return () => {
