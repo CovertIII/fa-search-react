@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BehaviorSubject } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, map, distinctUntilChanged } from 'rxjs/operators';
 import Input from './Input.js';
 import Results from './Results.js';
 
@@ -19,6 +19,8 @@ function Container() {
       setSubject(sub);
     } else {
       const observable = subject.pipe(
+        map(s => s.trim()),
+        distinctUntilChanged(),
         debounceTime(200)
       ).subscribe( term => {
         return fetch('https://fa-search-backend.herokuapp.com/search?delay=true&term=' + term).then(response => {
