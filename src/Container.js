@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { BehaviorSubject } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
 import Input from './Input.js';
 import Results from './Results.js';
 
@@ -9,32 +11,34 @@ function Container() {
     errorMessage: ''
   });
 
+  const [subject, setSubject] = useState(null);
+
+  useEffect(() => {
+    if(subject === null) {
+      const sub = new BehaviorSubject('');
+      setSubject(sub);
+    } else {
+      subject.subscribe( term => {
+        return fetch('https://fa-search-backend.herokuapp.com/search?delay=true&term=' + term).then(response => {
+          return response.json();
+        }).then(data => {
+          const newState = {
+            data,
+            loading: false
+          };
+          setState(s => Object.assign({}, s, newState));
+        });
+      });
+
+      return () => subject.unsubscribe();
+    }
+  }, [subject]);
+
   const onChange = e => {
-    const term = e.target.value;
-
-    setState(s => ({
-      loading: true,
-      data: [],
-      errorMessage: ''
-    }));
-
-    fetch('https://fa-search-backend.herokuapp.com/search?delay=true&term=' + term).then(response => {
-      return response.json();
-    }).then(data => {
-      setState(s => ({
-        loading: false,
-        data,
-        errorMessage: ''
-      }));
-    }).catch(e => {
-      setState(s => ({
-        loading: false,
-        data: [],
-        errorMessage: e.message
-      }));
-    });
+    if(subject) {
+      return subject.next(e.target.value);
+    }
   };
-
 
   return (
     <div className="container">
